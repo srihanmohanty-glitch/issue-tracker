@@ -1,0 +1,23 @@
+{
+  "name": "issue-tracker",
+  "version": "1.0.0",
+  "description": "Issue tracking application with admin responses",
+  "scripts": {
+    "install-all": "npm install && cd frontend && npm install && cd ../backend && npm install",
+    "dev": "concurrently \"cd backend && npm run dev\" \"cd frontend && npm run dev\"",
+    "build": "cd frontend && npm run build"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "@headlessui/react": "^2.2.9",
+    "@heroicons/react": "^2.2.0",
+    "@types/node": "^24.5.2",
+    "autoprefixer": "^10.4.21",
+    "axios": "^1.12.2",
+    "postcss": "^8.5.6",
+    "react-router-dom": "^7.9.3",
+    "tailwindcss": "^4.1.13"
+  }
+}

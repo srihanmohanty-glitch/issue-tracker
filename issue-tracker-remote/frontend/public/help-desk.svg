@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <circle fill="#0EA5E9" cx="12" cy="12" r="12"/>
+        <text x="12" y="17" font-family="Arial" font-size="16" font-weight="bold" fill="#FFFFFF" text-anchor="middle">?</text>
+    </g>
+</svg>
