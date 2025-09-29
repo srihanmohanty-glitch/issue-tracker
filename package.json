@@ -8,7 +8,8 @@
     "build": "cd frontend && npm run build"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "typescript": "^5.3.3"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.9",
