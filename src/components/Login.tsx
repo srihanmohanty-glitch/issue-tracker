@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { auth } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const { login, isLoggedIn } = useAuth();
   const [isRegistering, setIsRegistering] = useState(false);
   const [formData, setFormData] = useState({

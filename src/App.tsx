@@ -22,7 +22,6 @@ const ProtectedRoute = ({ children, requireAdmin = false }: { children: React.Re
 };
 
 function App() {
-  const { isLoggedIn } = useAuth();
 
   return (
     <Router>
