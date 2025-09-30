@@ -112,9 +112,9 @@ const Login = () => {
         </button>
 
         <div className="text-sm text-gray-600 mt-4">
-          <p>Demo Credentials:</p>
-          <p>Admin: admin@helpcenter.com / admin123</p>
-          <p>User: user@helpcenter.com / user123</p>
+        <p>Login Using Your USERNAME AND PASSWORD.</p>
+          <p>Copyright © 2025 Helpcenter.</p>
+          <p>© All Rights Reserved. © Refers to Helpcenter and/or its subsidiaries.</p>
         </div>
       </form>
     </div>
