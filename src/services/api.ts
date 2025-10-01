@@ -115,6 +115,16 @@ export const issues = {
 };
 
 export const accounts = {
+  getMe: async () => {
+    try {
+      const response = await api.get('/accounts/me');
+      return response.data;
+    } catch (error) {
+      console.error('Get current user error:', error);
+      throw error;
+    }
+  },
+
   getAll: async (params: any = {}) => {
     try {
       const queryString = new URLSearchParams(params).toString();

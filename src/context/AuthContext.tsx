@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { accounts } from '../services/api';
 
 interface User {
   _id: string;
@@ -10,6 +11,7 @@ interface AuthContextType {
   isLoggedIn: boolean;
   isAdmin: boolean;
   user: User | null;
+  isValidating: boolean;
   login: (role: string, userData?: User) => void;
   logout: () => void;
 }
@@ -20,20 +22,41 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [isValidating, setIsValidating] = useState(true);
 
   useEffect(() => {
-    // Check if user is logged in on mount
-    const token = localStorage.getItem('token');
-    const role = localStorage.getItem('userRole');
-    const userData = localStorage.getItem('userData');
-    if (token) {
-      setIsLoggedIn(true);
-      setIsAdmin(role === 'admin');
-      if (userData) {
-        setUser(JSON.parse(userData));
-      }
-    }
+    // Validate token on mount
+    validateToken();
   }, []);
+
+  const validateToken = async () => {
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+      setIsValidating(false);
+      return;
+    }
+
+    try {
+      // Try to fetch current user to validate token
+      const currentUser = await accounts.getMe();
+      
+      // Token is valid, set user state
+      setIsLoggedIn(true);
+      setIsAdmin(currentUser.role === 'admin');
+      setUser(currentUser);
+      
+      // Update localStorage with fresh data
+      localStorage.setItem('userRole', currentUser.role);
+      localStorage.setItem('userData', JSON.stringify(currentUser));
+    } catch (error) {
+      // Token is invalid, clear everything
+      console.log('Token validation failed, clearing auth state');
+      logout();
+    } finally {
+      setIsValidating(false);
+    }
+  };
 
   const login = (role: string, userData?: User) => {
     setIsLoggedIn(true);
@@ -55,7 +78,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, isAdmin, user, login, logout }}>
+    <AuthContext.Provider value={{ isLoggedIn, isAdmin, user, isValidating, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
