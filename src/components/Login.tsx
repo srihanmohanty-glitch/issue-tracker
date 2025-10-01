@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import HealthCheck from './HealthCheck';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -42,7 +43,17 @@ const Login = () => {
       navigate('/issues');
     } catch (error: any) {
       console.error('Auth error:', error);
-      setError(error.response?.data?.message || `Error ${isRegistering ? 'registering' : 'logging in'}`);
+      
+      // Handle different types of errors
+      if (error.code === 'NETWORK_ERROR' || error.message?.includes('Network Error')) {
+        setError('Unable to connect to server. Please check your internet connection and try again.');
+      } else if (error.response?.status === 401) {
+        setError('Invalid email or password. Please try again.');
+      } else if (error.response?.status >= 500) {
+        setError('Server error. Please try again later.');
+      } else {
+        setError(error.response?.data?.message || `Error ${isRegistering ? 'registering' : 'logging in'}`);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -59,6 +70,12 @@ const Login = () => {
   return (
     <div className="max-w-md mx-auto">
       <h2 className="text-2xl font-bold mb-6">{isRegistering ? 'Register' : 'Login'}</h2>
+      
+      {/* Health Check */}
+      <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+        <HealthCheck />
+      </div>
+      
       <form onSubmit={handleSubmit} className="card space-y-6">
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">

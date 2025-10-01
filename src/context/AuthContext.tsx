@@ -61,9 +61,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       console.log('Validating token...', token.substring(0, 20) + '...');
       
-      // Add timeout to prevent hanging
+      // Increase timeout to 30 seconds for better reliability
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Token validation timeout')), 10000)
+        setTimeout(() => reject(new Error('Token validation timeout')), 30000)
       );
       
       // Try to fetch current user to validate token
@@ -82,10 +82,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       // Update localStorage with fresh data
       localStorage.setItem('userRole', currentUser.role);
       localStorage.setItem('userData', JSON.stringify(currentUser));
-    } catch (error) {
-      // Token is invalid, clear everything
+    } catch (error: any) {
+      // Token is invalid or network error, clear everything
       console.log('Token validation failed, clearing auth state:', error);
-      logout();
+      
+      // Check if it's a network error vs authentication error
+      if (error.message === 'Token validation timeout' || 
+          error.code === 'NETWORK_ERROR' || 
+          error.message?.includes('Network Error')) {
+        console.log('Network error during token validation, keeping token for retry');
+        // Don't clear token on network errors, just set as not logged in
+        setIsLoggedIn(false);
+        setIsAdmin(false);
+        setUser(null);
+      } else {
+        // Clear token on authentication errors
+        logout();
+      }
     } finally {
       setIsValidating(false);
     }

@@ -35,6 +35,13 @@ api.interceptors.response.use(
       url: error.config?.url,
       baseURL: error.config?.baseURL
     });
+    
+    // Add network error detection
+    if (!error.response && error.request) {
+      error.code = 'NETWORK_ERROR';
+      error.message = 'Network Error - Unable to connect to server';
+    }
+    
     throw error;
   }
 );

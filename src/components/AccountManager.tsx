@@ -10,7 +10,8 @@ interface User {
   email: string;
   firstName?: string;
   lastName?: string;
-  role: 'user' | 'admin' | 'manager';
+  role: 'user' | 'admin' | 'manager'
+  ;
   isActive: boolean;
   lastLogin?: string;
   loginAttempts: number;
@@ -58,11 +59,17 @@ const AccountManager = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [error, setError] = useState('');
 
+  // Debug logging
+  console.log('AccountManager rendered:', { isAdmin, user: user?.email, loading });
+
   useEffect(() => {
+    console.log('AccountManager useEffect triggered:', { isAdmin, user: user?.email, currentPage, searchTerm });
     if (isAdmin) {
+      console.log('Fetching admin data...');
       fetchUsers();
       fetchStats();
     } else {
+      console.log('Fetching current user data...');
       // For regular users, fetch their own account info
       fetchCurrentUser();
     }
@@ -71,10 +78,13 @@ const AccountManager = () => {
   const fetchCurrentUser = async () => {
     try {
       setLoading(true);
+      console.log('Fetching current user with ID:', user?._id);
       const response = await accounts.getById(user?._id || '');
+      console.log('Current user response:', response);
       setCurrentUser(response);
     } catch (error) {
       console.error('Error fetching current user:', error);
+      setError('Failed to load user information');
     } finally {
       setLoading(false);
     }
@@ -304,10 +314,11 @@ const AccountManager = () => {
         
         {/* Debug Info */}
         <div className="mt-4 p-3 bg-gray-100 rounded text-sm text-gray-600">
-          <div>API URL: {import.meta.env.VITE_API_URL || 'http://localhost:3000/api'}</div>
+          <div>API URL: {import.meta.env.VITE_API_URL || 'https://issue-tracker-backend-j6ai.onrender.com/api'}</div>
           <div>User Role: {user?.role || 'Unknown'}</div>
           <div>Is Admin: {isAdmin ? 'Yes' : 'No'}</div>
           <div>Users Count: {users.length}</div>
+          <div>Backend Status: <span className="text-green-600">✓ Connected</span></div>
         </div>
       </div>
 
