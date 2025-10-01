@@ -59,8 +59,29 @@ router.post('/login', async (req, res) => {
 
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
+      // Increment login attempts
+      await user.incLoginAttempts();
       return res.status(401).json({ message: 'Invalid login credentials' });
     }
+
+    // Check if account is locked
+    if (user.isLocked()) {
+      return res.status(401).json({ message: 'Account is temporarily locked due to too many failed login attempts' });
+    }
+
+    // Reset login attempts on successful login
+    await user.resetLoginAttempts();
+
+    // Update user activity
+    await User.findByIdAndUpdate(user._id, {
+      $inc: { 
+        'activity.totalLogins': 1 
+      },
+      $set: { 
+        lastLogin: new Date(),
+        'activity.lastActivity': new Date()
+      }
+    });
 
     const token = jwt.sign({ _id: user._id }, JWT_SECRET);
     res.json({ 

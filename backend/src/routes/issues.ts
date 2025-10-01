@@ -4,6 +4,7 @@ import path from 'path';
 import fs from 'fs';
 import { auth, adminAuth } from '../middleware/auth';
 import Issue from '../models/Issue';
+import User from '../models/User';
 
 const router = express.Router();
 
@@ -63,6 +64,17 @@ router.post('/', auth, upload.array('images', 5), async (req: any, res) => {
     });
 
     await issue.save();
+
+    // Update user activity - increment issues created
+    await User.findByIdAndUpdate(req.user._id, {
+      $inc: { 
+        'activity.issuesCreated': 1 
+      },
+      $set: { 
+        'activity.lastActivity': new Date()
+      }
+    });
+
     res.status(201).json(issue);
   } catch (error) {
     res.status(400).json({ message: 'Error creating issue' });
@@ -89,6 +101,17 @@ router.post('/:id/response', adminAuth, upload.array('images', 5), async (req: a
     issue.status = 'resolved';
 
     await issue.save();
+
+    // Update user activity - increment issues resolved
+    await User.findByIdAndUpdate(req.user._id, {
+      $inc: { 
+        'activity.issuesResolved': 1 
+      },
+      $set: { 
+        'activity.lastActivity': new Date()
+      }
+    });
+
     res.json(issue);
   } catch (error) {
     res.status(400).json({ message: 'Error adding response' });
