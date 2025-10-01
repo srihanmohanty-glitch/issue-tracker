@@ -80,6 +80,16 @@ const AccountManager = () => {
     }
   };
 
+  const fetchAdminCurrentUser = async () => {
+    try {
+      await accounts.getMe();
+      // Update the user in AuthContext if needed
+      // This will be handled by the parent component
+    } catch (error) {
+      console.error('Error fetching admin current user:', error);
+    }
+  };
+
   const fetchUsers = async () => {
     try {
       setLoading(true);
@@ -300,6 +310,103 @@ const AccountManager = () => {
           <div>Users Count: {users.length}</div>
         </div>
       </div>
+
+      {/* Current Admin Account Section */}
+      {isAdmin && user && (
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6 mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-gray-900">Current Admin Account</h2>
+            <span className="inline-flex px-3 py-1 text-sm font-semibold rounded-full bg-blue-100 text-blue-800">
+              {user.role.toUpperCase()}
+            </span>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Admin Profile Info */}
+            <div className="bg-white rounded-lg p-4 shadow-sm">
+              <h3 className="font-medium text-gray-900 mb-3">Profile Information</h3>
+              <div className="space-y-2 text-sm">
+                <div>
+                  <span className="text-gray-500">Email:</span>
+                  <span className="ml-2 font-medium">{user.email}</span>
+                </div>
+                <div>
+                  <span className="text-gray-500">Name:</span>
+                  <span className="ml-2 font-medium">
+                    {user.firstName && user.lastName 
+                      ? `${user.firstName} ${user.lastName}` 
+                      : 'Not set'}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-gray-500">Status:</span>
+                  <span className={`ml-2 inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                    user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                  }`}>
+                    {user.isActive ? 'Active' : 'Inactive'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Admin Activity */}
+            <div className="bg-white rounded-lg p-4 shadow-sm">
+              <h3 className="font-medium text-gray-900 mb-3">Activity Summary</h3>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Total Logins:</span>
+                  <span className="font-medium text-blue-600">{user.activity?.totalLogins || 0}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Issues Created:</span>
+                  <span className="font-medium text-green-600">{user.activity?.issuesCreated || 0}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Issues Resolved:</span>
+                  <span className="font-medium text-purple-600">{user.activity?.issuesResolved || 0}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Last Login:</span>
+                  <span className="font-medium text-gray-600">
+                    {user.lastLogin ? formatDate(user.lastLogin) : 'Never'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="bg-white rounded-lg p-4 shadow-sm">
+              <h3 className="font-medium text-gray-900 mb-3">Quick Actions</h3>
+              <div className="space-y-2">
+                <button
+                  onClick={() => {
+                    setEditingUser(user);
+                    setShowEditModal(true);
+                  }}
+                  className="w-full text-left px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                >
+                  ✏️ Edit Profile
+                </button>
+                <button
+                  onClick={() => setShowPasswordModal(true)}
+                  className="w-full text-left px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                >
+                  🔒 Change Password
+                </button>
+                <button
+                  onClick={() => {
+                    fetchUsers();
+                    fetchStats();
+                  }}
+                  className="w-full text-left px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                >
+                  🔄 Refresh Data
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Statistics Cards */}
       {stats && (
@@ -601,6 +708,32 @@ const AccountManager = () => {
         userId={editingUser?._id || ''}
         isAdmin={true}
       />
+
+      {/* Admin's Own Account Modals */}
+      {isAdmin && user && (
+        <>
+          <EditUserModal
+            isOpen={showEditModal && editingUser?._id === user._id}
+            onClose={() => setShowEditModal(false)}
+            onSuccess={() => {
+              // Refresh current user data
+              fetchAdminCurrentUser();
+              setShowEditModal(false);
+            }}
+            user={user}
+            isAdmin={false} // Admin editing their own profile, not as admin
+          />
+          <ChangePasswordModal
+            isOpen={showPasswordModal && !editingUser}
+            onClose={() => setShowPasswordModal(false)}
+            onSuccess={() => {
+              setShowPasswordModal(false);
+            }}
+            userId={user._id}
+            isAdmin={false} // Admin changing their own password
+          />
+        </>
+      )}
     </div>
   );
 };

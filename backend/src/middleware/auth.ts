@@ -32,28 +32,52 @@ export const auth = async (req: AuthRequest, res: Response, next: NextFunction) 
 
 export const adminAuth = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    await auth(req, res, () => {});
-    
-    if (req.user?.role !== 'admin') {
-      throw new Error();
+    const token = req.header('Authorization')?.replace('Bearer ', '');
+
+    if (!token) {
+      return res.status(401).json({ message: 'Please authenticate' });
+    }
+
+    const decoded = jwt.verify(token, JWT_SECRET) as { _id: string };
+    const user = await User.findById(decoded._id);
+
+    if (!user) {
+      return res.status(401).json({ message: 'Please authenticate' });
+    }
+
+    if (user.role !== 'admin') {
+      return res.status(403).json({ message: 'Admin access required' });
     }
     
+    req.user = user;
     next();
   } catch (error) {
-    res.status(403).json({ message: 'Admin access required' });
+    res.status(401).json({ message: 'Please authenticate' });
   }
 };
 
 export const managerAuth = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    await auth(req, res, () => {});
-    
-    if (req.user?.role !== 'admin' && req.user?.role !== 'manager') {
-      throw new Error();
+    const token = req.header('Authorization')?.replace('Bearer ', '');
+
+    if (!token) {
+      return res.status(401).json({ message: 'Please authenticate' });
+    }
+
+    const decoded = jwt.verify(token, JWT_SECRET) as { _id: string };
+    const user = await User.findById(decoded._id);
+
+    if (!user) {
+      return res.status(401).json({ message: 'Please authenticate' });
+    }
+
+    if (user.role !== 'admin' && user.role !== 'manager') {
+      return res.status(403).json({ message: 'Manager or Admin access required' });
     }
     
+    req.user = user;
     next();
   } catch (error) {
-    res.status(403).json({ message: 'Manager or Admin access required' });
+    res.status(401).json({ message: 'Please authenticate' });
   }
 };

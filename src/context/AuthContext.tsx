@@ -4,7 +4,27 @@ import { accounts } from '../services/api';
 interface User {
   _id: string;
   email: string;
-  role: string;
+  role: 'user' | 'admin' | 'manager';
+  firstName?: string;
+  lastName?: string;
+  isActive: boolean;
+  lastLogin?: string;
+  loginAttempts: number;
+  lockUntil?: string;
+  profile: {
+    department?: string;
+    phone?: string;
+    timezone?: string;
+    language?: string;
+  };
+  activity: {
+    totalLogins: number;
+    lastActivity: string;
+    issuesCreated: number;
+    issuesResolved: number;
+  };
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface AuthContextType {
