@@ -56,6 +56,7 @@ const AccountManager = () => {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     if (isAdmin) {
@@ -82,14 +83,20 @@ const AccountManager = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
+      setError('');
+      console.log('Fetching users with params:', { page: currentPage, search: searchTerm });
       const response = await accounts.getAll({
         page: currentPage,
         search: searchTerm,
       });
-      setUsers(response.users);
-      setTotalPages(response.totalPages);
-    } catch (error) {
+      console.log('Users response:', response);
+      setUsers(response.users || []);
+      setTotalPages(response.totalPages || 1);
+    } catch (error: any) {
       console.error('Error fetching users:', error);
+      setError(error.response?.data?.message || 'Failed to load users');
+      setUsers([]);
+      setTotalPages(1);
     } finally {
       setLoading(false);
     }
@@ -97,10 +104,13 @@ const AccountManager = () => {
 
   const fetchStats = async () => {
     try {
+      console.log('Fetching stats...');
       const response = await accounts.getStats();
+      console.log('Stats response:', response);
       setStats(response);
     } catch (error) {
       console.error('Error fetching stats:', error);
+      setStats(null);
     }
   };
 
@@ -281,6 +291,14 @@ const AccountManager = () => {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Account Manager</h1>
         <p className="text-gray-600">Manage user accounts, roles, and permissions</p>
+        
+        {/* Debug Info */}
+        <div className="mt-4 p-3 bg-gray-100 rounded text-sm text-gray-600">
+          <div>API URL: {import.meta.env.VITE_API_URL || 'http://localhost:3000/api'}</div>
+          <div>User Role: {user?.role || 'Unknown'}</div>
+          <div>Is Admin: {isAdmin ? 'Yes' : 'No'}</div>
+          <div>Users Count: {users.length}</div>
+        </div>
       </div>
 
       {/* Statistics Cards */}
@@ -322,6 +340,16 @@ const AccountManager = () => {
             >
               Create User
             </button>
+            <button
+              onClick={() => {
+                fetchUsers();
+                fetchStats();
+              }}
+              className="btn-secondary"
+              disabled={loading}
+            >
+              {loading ? 'Loading...' : 'Refresh'}
+            </button>
           </div>
 
           {selectedUsers.length > 0 && (
@@ -348,6 +376,21 @@ const AccountManager = () => {
           )}
         </div>
       </div>
+
+      {/* Error Display */}
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+          <div className="flex justify-between items-center">
+            <span>{error}</span>
+            <button
+              onClick={() => setError('')}
+              className="text-red-500 hover:text-red-700"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Users Table */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
