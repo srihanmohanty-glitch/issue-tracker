@@ -44,7 +44,8 @@ interface UserStats {
 }
 
 const AccountManager = () => {
-  const { isAdmin, user } = useAuth();
+  try {
+    const { isAdmin, user } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [stats, setStats] = useState<UserStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -61,6 +62,20 @@ const AccountManager = () => {
 
   // Debug logging
   console.log('AccountManager rendered:', { isAdmin, user: user?.email, loading });
+
+  // Fallback for debugging
+  if (!user) {
+    return (
+      <div className="max-w-4xl mx-auto p-6">
+        <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">
+          <h2>Debug: No user data available</h2>
+          <p>User: {JSON.stringify(user)}</p>
+          <p>IsAdmin: {isAdmin ? 'Yes' : 'No'}</p>
+          <p>Loading: {loading ? 'Yes' : 'No'}</p>
+        </div>
+      </div>
+    );
+  }
 
   useEffect(() => {
     console.log('AccountManager useEffect triggered:', { isAdmin, user: user?.email, currentPage, searchTerm });
@@ -219,11 +234,11 @@ const AccountManager = () => {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Department</label>
-                      <p className="text-gray-900">{currentUser.profile.department || 'Not set'}</p>
+                      <p className="text-gray-900">{currentUser.profile?.department || 'Not set'}</p>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Phone</label>
-                      <p className="text-gray-900">{currentUser.profile.phone || 'Not set'}</p>
+                      <p className="text-gray-900">{currentUser.profile?.phone || 'Not set'}</p>
                     </div>
                   </div>
                 </div>
@@ -576,7 +591,7 @@ const AccountManager = () => {
                             : user.email}
                         </div>
                         <div className="text-sm text-gray-500">{user.email}</div>
-                        {user.profile.department && (
+                        {user.profile?.department && (
                           <div className="text-xs text-gray-400">{user.profile.department}</div>
                         )}
                       </div>
@@ -602,8 +617,8 @@ const AccountManager = () => {
                       {user.lastLogin ? formatDate(user.lastLogin) : 'Never'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <div>Logins: {user.activity.totalLogins}</div>
-                      <div>Issues: {user.activity.issuesCreated}</div>
+                      <div>Logins: {user.activity?.totalLogins || 0}</div>
+                      <div>Issues: {user.activity?.issuesCreated || 0}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <button
@@ -747,6 +762,18 @@ const AccountManager = () => {
       )}
     </div>
   );
+  } catch (error) {
+    console.error('AccountManager error:', error);
+    return (
+      <div className="max-w-4xl mx-auto p-6">
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+          <h2>Error Loading Account Manager</h2>
+          <p>Error: {error instanceof Error ? error.message : 'Unknown error'}</p>
+          <p>Please check the console for more details.</p>
+        </div>
+      </div>
+    );
+  }
 };
 
 export default AccountManager;
