@@ -4,7 +4,7 @@ import Navbar from './components/Navbar';
 import IssueList from './components/IssueList';
 import IssueForm from './components/IssueForm';
 import AdminDashboard from './components/AdminDashboard';
-import AccountManager from './components/AccountManager';
+import AccountManagerSimple from './components/AccountManagerSimple';
 import Login from './components/Login';
 
 // Protected Route component
@@ -73,7 +73,7 @@ function App() {
               path="/accounts" 
               element={
                 <ProtectedRoute>
-                  <AccountManager />
+                  <AccountManagerSimple />
                 </ProtectedRoute>
               } 
             />

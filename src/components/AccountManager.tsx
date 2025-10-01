@@ -44,8 +44,7 @@ interface UserStats {
 }
 
 const AccountManager = () => {
-  try {
-    const { isAdmin, user } = useAuth();
+  const { isAdmin, user } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [stats, setStats] = useState<UserStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -63,7 +62,7 @@ const AccountManager = () => {
   // Debug logging
   console.log('AccountManager rendered:', { isAdmin, user: user?.email, loading });
 
-  // Fallback for debugging
+  // Simple fallback for debugging
   if (!user) {
     return (
       <div className="max-w-4xl mx-auto p-6">
@@ -762,18 +761,6 @@ const AccountManager = () => {
       )}
     </div>
   );
-  } catch (error) {
-    console.error('AccountManager error:', error);
-    return (
-      <div className="max-w-4xl mx-auto p-6">
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-          <h2>Error Loading Account Manager</h2>
-          <p>Error: {error instanceof Error ? error.message : 'Unknown error'}</p>
-          <p>Please check the console for more details.</p>
-        </div>
-      </div>
-    );
-  }
 };
 
 export default AccountManager;
