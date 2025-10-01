@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { accounts } from '../services/api';
+import CreateUserModal from './CreateUserModal';
+import EditUserModal from './EditUserModal';
+import ChangePasswordModal from './ChangePasswordModal';
 
 interface User {
   _id: string;
@@ -40,7 +43,7 @@ interface UserStats {
 }
 
 const AccountManager = () => {
-  const { isAdmin } = useAuth();
+  const { isAdmin, user } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [stats, setStats] = useState<UserStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -48,16 +51,33 @@ const AccountManager = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
-  // const [showCreateModal, setShowCreateModal] = useState(false);
-  // const [showEditModal, setShowEditModal] = useState(false);
-  // const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   useEffect(() => {
     if (isAdmin) {
       fetchUsers();
       fetchStats();
+    } else {
+      // For regular users, fetch their own account info
+      fetchCurrentUser();
     }
   }, [isAdmin, currentPage, searchTerm]);
+
+  const fetchCurrentUser = async () => {
+    try {
+      setLoading(true);
+      const response = await accounts.getById(user?._id || '');
+      setCurrentUser(response);
+    } catch (error) {
+      console.error('Error fetching current user:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchUsers = async () => {
     try {
@@ -126,11 +146,132 @@ const AccountManager = () => {
     return new Date(dateString).toLocaleDateString();
   };
 
+  // User Profile View for non-admin users
   if (!isAdmin) {
     return (
-      <div className="text-center py-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h2>
-        <p className="text-gray-600">You need admin privileges to access the Account Manager.</p>
+      <div className="max-w-4xl mx-auto p-6">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">My Account</h1>
+          <p className="text-gray-600">Manage your account settings and profile</p>
+        </div>
+
+        {loading ? (
+          <div className="flex justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          </div>
+        ) : currentUser ? (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Profile Card */}
+            <div className="lg:col-span-2">
+              <div className="bg-white rounded-lg shadow p-6">
+                <h2 className="text-xl font-semibold mb-4">Profile Information</h2>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Email</label>
+                    <p className="text-gray-900">{currentUser.email}</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">First Name</label>
+                      <p className="text-gray-900">{currentUser.firstName || 'Not set'}</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Last Name</label>
+                      <p className="text-gray-900">{currentUser.lastName || 'Not set'}</p>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Role</label>
+                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleBadgeColor(currentUser.role)}`}>
+                      {currentUser.role}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Department</label>
+                      <p className="text-gray-900">{currentUser.profile.department || 'Not set'}</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Phone</label>
+                      <p className="text-gray-900">{currentUser.profile.phone || 'Not set'}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-6 flex gap-3">
+                  <button
+                    onClick={() => {
+                      setEditingUser(currentUser);
+                      setShowEditModal(true);
+                    }}
+                    className="btn-primary"
+                  >
+                    Edit Profile
+                  </button>
+                  <button
+                    onClick={() => setShowPasswordModal(true)}
+                    className="btn-secondary"
+                  >
+                    Change Password
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Activity Card */}
+            <div>
+              <div className="bg-white rounded-lg shadow p-6">
+                <h2 className="text-xl font-semibold mb-4">Activity</h2>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Total Logins</label>
+                    <p className="text-2xl font-bold text-blue-600">{currentUser.activity.totalLogins}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Issues Created</label>
+                    <p className="text-2xl font-bold text-green-600">{currentUser.activity.issuesCreated}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Issues Resolved</label>
+                    <p className="text-2xl font-bold text-purple-600">{currentUser.activity.issuesResolved}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Last Activity</label>
+                    <p className="text-gray-900">{formatDate(currentUser.activity.lastActivity)}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Last Login</label>
+                    <p className="text-gray-900">{currentUser.lastLogin ? formatDate(currentUser.lastLogin) : 'Never'}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="text-center py-8">
+            <p className="text-gray-600">Unable to load account information.</p>
+          </div>
+        )}
+
+        {/* Modals for user profile */}
+        <EditUserModal
+          isOpen={showEditModal}
+          onClose={() => setShowEditModal(false)}
+          onSuccess={() => {
+            fetchCurrentUser();
+            setShowEditModal(false);
+          }}
+          user={editingUser}
+          isAdmin={false}
+        />
+        <ChangePasswordModal
+          isOpen={showPasswordModal}
+          onClose={() => setShowPasswordModal(false)}
+          onSuccess={() => {
+            setShowPasswordModal(false);
+          }}
+          userId={user?._id || ''}
+          isAdmin={false}
+        />
       </div>
     );
   }
@@ -176,7 +317,7 @@ const AccountManager = () => {
               className="input"
             />
             <button
-              onClick={() => alert('Create User modal coming soon!')}
+              onClick={() => setShowCreateModal(true)}
               className="btn-primary"
             >
               Create User
@@ -305,10 +446,22 @@ const AccountManager = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <button
-                        onClick={() => alert('Edit User modal coming soon!')}
+                        onClick={() => {
+                          setEditingUser(user);
+                          setShowEditModal(true);
+                        }}
                         className="text-blue-600 hover:text-blue-900 mr-3"
                       >
                         Edit
+                      </button>
+                      <button
+                        onClick={() => {
+                          setEditingUser(user);
+                          setShowPasswordModal(true);
+                        }}
+                        className="text-purple-600 hover:text-purple-900 mr-3"
+                      >
+                        Password
                       </button>
                       {user.lockUntil && new Date(user.lockUntil) > new Date() && (
                         <button
@@ -374,6 +527,37 @@ const AccountManager = () => {
           </div>
         )}
       </div>
+
+      {/* Modals */}
+      <CreateUserModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onSuccess={() => {
+          fetchUsers();
+          fetchStats();
+          setShowCreateModal(false);
+        }}
+      />
+      <EditUserModal
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        onSuccess={() => {
+          fetchUsers();
+          fetchStats();
+          setShowEditModal(false);
+        }}
+        user={editingUser}
+        isAdmin={true}
+      />
+      <ChangePasswordModal
+        isOpen={showPasswordModal}
+        onClose={() => setShowPasswordModal(false)}
+        onSuccess={() => {
+          setShowPasswordModal(false);
+        }}
+        userId={editingUser?._id || ''}
+        isAdmin={true}
+      />
     </div>
   );
 };

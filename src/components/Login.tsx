@@ -32,7 +32,7 @@ const Login = () => {
         : await auth.login(formData.email, formData.password);
       
       localStorage.setItem('token', response.token);
-      login(response.user.role);
+      login(response.user.role, response.user);
 
       // Always navigate to home page first
       navigate('/');

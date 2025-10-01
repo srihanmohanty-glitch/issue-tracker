@@ -61,7 +61,7 @@ function App() {
             <Route 
               path="/accounts" 
               element={
-                <ProtectedRoute requireAdmin>
+                <ProtectedRoute>
                   <AccountManager />
                 </ProtectedRoute>
               } 
