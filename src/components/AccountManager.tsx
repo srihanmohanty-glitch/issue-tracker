@@ -40,7 +40,7 @@ interface UserStats {
   managerUsers: number;
   regularUsers: number;
   recentLogins: number;
-  lockedAccounts: number;
+  lockedAccounts: number
 }
 
 const AccountManager = () => {
