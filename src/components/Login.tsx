@@ -17,7 +17,7 @@ const Login = () => {
   // Redirect if already logged in (but not while validating)
   useEffect(() => {
     if (!isValidating && isLoggedIn) {
-      navigate('/');
+      navigate('/issues');
     }
   }, [isLoggedIn, isValidating, navigate]);
 
@@ -43,8 +43,8 @@ const Login = () => {
       localStorage.setItem('token', response.token);
       login(response.user.role, response.user);
 
-      // Always navigate to home page first
-      navigate('/');
+      // Always navigate to issues page after login
+      navigate('/issues');
     } catch (error: any) {
       console.error('Auth error:', error);
       setError(error.response?.data?.message || `Error ${isRegistering ? 'registering' : 'logging in'}`);

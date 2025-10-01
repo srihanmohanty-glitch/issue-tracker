@@ -25,7 +25,7 @@ const ProtectedRoute = ({ children, requireAdmin = false }: { children: React.Re
   }
 
   if (requireAdmin && !isAdmin) {
-    return <Navigate to="/" />;
+    return <Navigate to="/issues" />;
   }
 
   return <>{children}</>;
@@ -41,9 +41,12 @@ function App() {
             {/* Public route */}
             <Route path="/login" element={<Login />} />
 
+            {/* Root route - always redirect to login */}
+            <Route path="/" element={<Navigate to="/login" />} />
+            
             {/* Protected routes */}
             <Route 
-              path="/" 
+              path="/issues" 
               element={
                 <ProtectedRoute>
                   <IssueList />
@@ -75,8 +78,8 @@ function App() {
               } 
             />
 
-            {/* Catch all route - redirect to home */}
-            <Route path="*" element={<Navigate to="/" />} />
+            {/* Catch all route - redirect to login */}
+            <Route path="*" element={<Navigate to="/login" />} />
           </Routes>
         </main>
       </div>
