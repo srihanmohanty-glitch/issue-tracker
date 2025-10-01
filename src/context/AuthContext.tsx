@@ -53,13 +53,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const token = localStorage.getItem('token');
     
     if (!token) {
+      console.log('No token found, user not logged in');
       setIsValidating(false);
       return;
     }
 
     try {
+      console.log('Validating token...', token.substring(0, 20) + '...');
+      
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Token validation timeout')), 10000)
+      );
+      
       // Try to fetch current user to validate token
-      const currentUser = await accounts.getMe();
+      const currentUser = await Promise.race([
+        accounts.getMe(),
+        timeoutPromise
+      ]) as any;
+      
+      console.log('Token validation successful:', currentUser);
       
       // Token is valid, set user state
       setIsLoggedIn(true);
@@ -71,7 +84,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       localStorage.setItem('userData', JSON.stringify(currentUser));
     } catch (error) {
       // Token is invalid, clear everything
-      console.log('Token validation failed, clearing auth state');
+      console.log('Token validation failed, clearing auth state:', error);
       logout();
     } finally {
       setIsValidating(false);

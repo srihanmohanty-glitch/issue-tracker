@@ -32,7 +32,6 @@ const ProtectedRoute = ({ children, requireAdmin = false }: { children: React.Re
 };
 
 function App() {
-
   return (
     <Router>
       <div className="min-h-screen bg-gray-100">
