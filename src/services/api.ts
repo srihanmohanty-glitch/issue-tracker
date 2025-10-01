@@ -2,9 +2,10 @@ import axios from 'axios';
 
 // Use the IP address of your computer
 // Updated API URL for Render backend deployment
-const API_URL = window.location.hostname === 'localhost' 
-  ? 'http://localhost:3000/api'
-  : 'https://issue-tracker-backend-j6ai.onrender.com/api';
+const API_URL = import.meta.env.VITE_API_URL || 
+  (window.location.hostname === 'localhost' 
+    ? 'http://localhost:3000/api'
+    : 'https://issue-tracker-backend-j6ai.onrender.com/api');
 
 const api = axios.create({
   baseURL: API_URL,
