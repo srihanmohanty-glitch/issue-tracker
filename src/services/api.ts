@@ -3,7 +3,7 @@ import axios from 'axios';
 // Use the IP address of your computer
 const API_URL = window.location.hostname === 'localhost' 
   ? 'http://localhost:3000/api'
-  : 'https://issue-tracker-backend.onrender.com/api';
+  : 'https://issue-tracker-backend-j6ai.onrender.com/api';
 
 const api = axios.create({
   baseURL: API_URL,

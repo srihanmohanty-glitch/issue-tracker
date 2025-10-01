@@ -30,9 +30,7 @@ const Login = () => {
       const response = isRegistering 
         ? await auth.register(formData.email, formData.password)
         : await auth.login(formData.email, formData.password);
-      
-      localStorage.setItem('token', response.token);
-      login(response.user.role);
+      user.role);
 
       // Always navigate to home page first
       navigate('/');
