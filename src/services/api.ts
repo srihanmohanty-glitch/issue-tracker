@@ -114,4 +114,91 @@ export const issues = {
   },
 };
 
+export const accounts = {
+  getAll: async (params: any = {}) => {
+    try {
+      const queryString = new URLSearchParams(params).toString();
+      const response = await api.get(`/accounts?${queryString}`);
+      return response.data;
+    } catch (error) {
+      console.error('Get accounts error:', error);
+      throw error;
+    }
+  },
+
+  getById: async (id: string) => {
+    try {
+      const response = await api.get(`/accounts/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error('Get account error:', error);
+      throw error;
+    }
+  },
+
+  create: async (userData: any) => {
+    try {
+      const response = await api.post('/accounts', userData);
+      return response.data;
+    } catch (error) {
+      console.error('Create account error:', error);
+      throw error;
+    }
+  },
+
+  update: async (id: string, userData: any) => {
+    try {
+      const response = await api.put(`/accounts/${id}`, userData);
+      return response.data;
+    } catch (error) {
+      console.error('Update account error:', error);
+      throw error;
+    }
+  },
+
+  changePassword: async (id: string, passwordData: any) => {
+    try {
+      const response = await api.put(`/accounts/${id}/password`, passwordData);
+      return response.data;
+    } catch (error) {
+      console.error('Change password error:', error);
+      throw error;
+    }
+  },
+
+  resetLoginAttempts: async (id: string) => {
+    try {
+      const response = await api.post(`/accounts/${id}/reset-login-attempts`);
+      return response.data;
+    } catch (error) {
+      console.error('Reset login attempts error:', error);
+      throw error;
+    }
+  },
+
+  bulkAction: async (action: string, userIds: string[], data?: any) => {
+    try {
+      const response = await api.post('/accounts/bulk', {
+        action,
+        userIds,
+        data
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Bulk action error:', error);
+      throw error;
+    }
+  },
+
+  getStats: async () => {
+    try {
+      const response = await api.get('/accounts/stats/overview');
+      return response.data;
+    } catch (error) {
+      console.error('Get stats error:', error);
+      throw error;
+    }
+  },
+};
+
 export default api;

@@ -7,6 +7,7 @@ import path from 'path';
 // Routes
 import authRoutes from './routes/auth';
 import issueRoutes from './routes/issues';
+import accountRoutes from './routes/accounts';
 
 dotenv.config();
 
@@ -26,6 +27,7 @@ mongoose.connect(MONGODB_URI)
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/issues', issueRoutes);
+app.use('/api/accounts', accountRoutes);
 
 // Basic route for testing
 app.get('/api/test', (req, res) => {

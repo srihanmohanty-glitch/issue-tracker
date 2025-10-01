@@ -4,6 +4,7 @@ import Navbar from './components/Navbar';
 import IssueList from './components/IssueList';
 import IssueForm from './components/IssueForm';
 import AdminDashboard from './components/AdminDashboard';
+import AccountManager from './components/AccountManager';
 import Login from './components/Login';
 
 // Protected Route component
@@ -54,6 +55,14 @@ function App() {
               element={
                 <ProtectedRoute requireAdmin>
                   <AdminDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/accounts" 
+              element={
+                <ProtectedRoute requireAdmin>
+                  <AccountManager />
                 </ProtectedRoute>
               } 
             />

@@ -43,3 +43,17 @@ export const adminAuth = async (req: AuthRequest, res: Response, next: NextFunct
     res.status(403).json({ message: 'Admin access required' });
   }
 };
+
+export const managerAuth = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    await auth(req, res, () => {});
+    
+    if (req.user?.role !== 'admin' && req.user?.role !== 'manager') {
+      throw new Error();
+    }
+    
+    next();
+  } catch (error) {
+    res.status(403).json({ message: 'Manager or Admin access required' });
+  }
+};

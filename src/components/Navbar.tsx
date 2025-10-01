@@ -32,12 +32,20 @@ const Navbar = () => {
               Submit Issue
             </Link>
             {isAdmin && (
-              <Link
-                to="/admin"
-                className="text-gray-600 hover:text-primary-600 px-3 py-2 rounded-md"
-              >
-                Admin
-              </Link>
+              <>
+                <Link
+                  to="/admin"
+                  className="text-gray-600 hover:text-primary-600 px-3 py-2 rounded-md"
+                >
+                  Admin
+                </Link>
+                <Link
+                  to="/accounts"
+                  className="text-gray-600 hover:text-primary-600 px-3 py-2 rounded-md"
+                >
+                  Accounts
+                </Link>
+              </>
             )}
             {isLoggedIn ? (
               <button
