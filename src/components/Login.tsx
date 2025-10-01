@@ -1,8 +1,10 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { auth } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
+  const navigate = useNavigate();
   const { login, isValidating } = useAuth();
   const [isRegistering, setIsRegistering] = useState(false);
   const [formData, setFormData] = useState({
@@ -36,8 +38,8 @@ const Login = () => {
       localStorage.setItem('token', response.token);
       login(response.user.role, response.user);
 
-      // Stay on login page after successful login
-      // User can manually navigate to other pages via navbar
+      // Redirect to issues dashboard after successful login
+      navigate('/issues');
     } catch (error: any) {
       console.error('Auth error:', error);
       setError(error.response?.data?.message || `Error ${isRegistering ? 'registering' : 'logging in'}`);
