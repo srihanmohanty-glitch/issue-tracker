@@ -1,10 +1,9 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { auth } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
-  const { login, isLoggedIn, isValidating, isAdmin } = useAuth();
+  const { login, isValidating } = useAuth();
   const [isRegistering, setIsRegistering] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
@@ -65,34 +64,6 @@ const Login = () => {
           </div>
         )}
         
-        {isLoggedIn && !isValidating && (
-          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
-            <p className="font-medium">✅ Successfully logged in!</p>
-            <p className="text-sm mt-1">Welcome back! You can now navigate to other sections using the navbar above.</p>
-            <div className="mt-3 space-y-2">
-              <Link 
-                to="/issues" 
-                className="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
-              >
-                Go to Issues Dashboard
-              </Link>
-              {isAdmin && (
-                <Link 
-                  to="/admin" 
-                  className="inline-block bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition-colors ml-2"
-                >
-                  Go to Admin Dashboard
-                </Link>
-              )}
-              <Link 
-                to="/accounts" 
-                className="inline-block bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 transition-colors ml-2"
-              >
-                Manage Account
-              </Link>
-            </div>
-          </div>
-        )}
         
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
