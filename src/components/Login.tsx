@@ -1,11 +1,10 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { auth } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
-  const navigate = useNavigate();
-  const { login, isLoggedIn, isValidating } = useAuth();
+  const { login, isLoggedIn, isValidating, isAdmin } = useAuth();
   const [isRegistering, setIsRegistering] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
@@ -14,12 +13,7 @@ const Login = () => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  // Redirect if already logged in (but not while validating)
-  useEffect(() => {
-    if (!isValidating && isLoggedIn) {
-      navigate('/issues');
-    }
-  }, [isLoggedIn, isValidating, navigate]);
+  // No auto-redirect - users stay on login page even when logged in
 
   // Show loading while validating token
   if (isValidating) {
@@ -43,8 +37,8 @@ const Login = () => {
       localStorage.setItem('token', response.token);
       login(response.user.role, response.user);
 
-      // Always navigate to issues page after login
-      navigate('/issues');
+      // Stay on login page after successful login
+      // User can manually navigate to other pages via navbar
     } catch (error: any) {
       console.error('Auth error:', error);
       setError(error.response?.data?.message || `Error ${isRegistering ? 'registering' : 'logging in'}`);
@@ -68,6 +62,35 @@ const Login = () => {
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
             {error}
+          </div>
+        )}
+        
+        {isLoggedIn && !isValidating && (
+          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
+            <p className="font-medium">✅ Successfully logged in!</p>
+            <p className="text-sm mt-1">Welcome back! You can now navigate to other sections using the navbar above.</p>
+            <div className="mt-3 space-y-2">
+              <Link 
+                to="/issues" 
+                className="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+              >
+                Go to Issues Dashboard
+              </Link>
+              {isAdmin && (
+                <Link 
+                  to="/admin" 
+                  className="inline-block bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition-colors ml-2"
+                >
+                  Go to Admin Dashboard
+                </Link>
+              )}
+              <Link 
+                to="/accounts" 
+                className="inline-block bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 transition-colors ml-2"
+              >
+                Manage Account
+              </Link>
+            </div>
           </div>
         )}
         
