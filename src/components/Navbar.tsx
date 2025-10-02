@@ -35,7 +35,7 @@ const Navbar = () => {
               to="/accounts"
               className="text-gray-600 hover:text-primary-600 px-3 py-2 rounded-md"
             >
-              My Account
+              My Account 
             </Link>
             {isAdmin && (
               <Link
