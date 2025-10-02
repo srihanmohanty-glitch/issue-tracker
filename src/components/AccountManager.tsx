@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { accounts } from '../services/api';
 import CreateUserModal from './CreateUserModal';
 import EditUserModal from './EditUserModal';
 import ChangePasswordModal from './ChangePasswordModal';
@@ -10,8 +9,8 @@ interface User {
   email: string;
   firstName?: string;
   lastName?: string;
-  role: 'user' | 'admin' | 'manager'
-  ;
+  name?: string; // <-- Added for display
+  role: 'user' | 'admin' | 'manager';
   isActive: boolean;
   lastLogin?: string;
   loginAttempts: number;
@@ -30,6 +29,7 @@ interface User {
   };
   createdAt: string;
   updatedAt: string;
+  status?: string; // <-- Added for display
 }
 
 interface UserStats {
@@ -59,10 +59,7 @@ const AccountManager = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [error, setError] = useState('');
 
-  // Debug logging
-  console.log('AccountManager rendered:', { isAdmin, user: user?.email, loading });
-
-  // Simple fallback for debugging
+  // Fallback for debugging
   if (!user) {
     return (
       <div className="max-w-4xl mx-auto p-6">
@@ -72,20 +69,30 @@ const AccountManager = () => {
   }
 
   useEffect(() => {
-    console.log('AccountManager useEffect triggered:', { isAdmin, user: user?.email, currentPage, searchTerm });
-    if (isAdmin) {
-      fetchUsers();
-      fetchStats();
-    } else {
-      fetchCurrentUser();
-    }
+    const fetchData = async () => {
+      setError('');
+      setLoading(true);
+      try {
+        if (isAdmin) {
+          await fetchUsers();
+          await fetchStats();
+        } else {
+          await fetchCurrentUser();
+        }
+      } catch (err) {
+        setError('Failed to fetch data.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
     // eslint-disable-next-line
   }, [isAdmin, currentPage, searchTerm]);
 
   const fetchCurrentUser = async () => {
     try {
       setLoading(true);
-      // Fetch current user data from API
+      // TODO: Implement actual API call
       // const response = await fetch('/api/users/me');
       // const data = await response.json();
       // setCurrentUser(data);
@@ -99,7 +106,7 @@ const AccountManager = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      // Fetch users data from API
+      // TODO: Implement actual API call
       // const response = await fetch(`/api/users?page=${currentPage}&search=${searchTerm}`);
       // const data = await response.json();
       // setUsers(data.users);
@@ -113,7 +120,7 @@ const AccountManager = () => {
 
   const fetchStats = async () => {
     try {
-      // Fetch stats data from API
+      // TODO: Implement actual API call
       // const response = await fetch('/api/users/stats');
       // const data = await response.json();
       // setStats(data);
@@ -122,12 +129,26 @@ const AccountManager = () => {
     }
   };
 
+  // Helper to get display name
+  const getDisplayName = (u: User) => {
+    if (u.name) return u.name;
+    if (u.firstName || u.lastName) return [u.firstName, u.lastName].filter(Boolean).join(' ');
+    return 'N/A';
+  };
+
   // Example render for admin
   if (isAdmin) {
+    if (loading) return <div>Loading...</div>;
+    if (error) return <div>Error: {error}</div>;
     return (
       <div className="max-w-6xl mx-auto p-6">
         <h2 className="text-2xl font-bold mb-4">Account Management</h2>
-        {error && <div className="text-red-500 mb-2">{error}</div>}
+        <button
+          className="mb-4 px-4 py-2 bg-blue-600 text-white rounded"
+          onClick={() => setShowCreateModal(true)}
+        >
+          Create User
+        </button>
         <table className="min-w-full bg-white border">
           <thead>
             <tr>
@@ -140,53 +161,105 @@ const AccountManager = () => {
             </tr>
           </thead>
           <tbody>
-            {users.map((user) => (
-              <tr key={user._id}>
-                <td className="py-2 px-4 border-b">{user.name ?? 'N/A'}</td>
-                <td className="py-2 px-4 border-b">{user.email ?? 'N/A'}</td>
-                <td className="py-2 px-4 border-b">{user.role ?? 'N/A'}</td>
-                <td className="py-2 px-4 border-b">{user?.profile?.department ?? 'N/A'}</td>
-                <td className="py-2 px-4 border-b">{user.status ?? 'N/A'}</td>
-                <td className="py-2 px-4 border-b">
-                  {/* Actions: Edit, Delete, etc. */}
-                  <button
-                    className="text-blue-500 hover:underline mr-2"
-                    onClick={() => {
-                      setEditingUser(user);
-                      setShowEditModal(true);
-                    }}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    className="text-red-500 hover:underline"
-                    onClick={() => {
-                      // handleDeleteUser(user._id);
-                    }}
-                  >
-                    Delete
-                  </button>
-                </td>
+            {users.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="py-4 text-center text-gray-500">No users found.</td>
               </tr>
-            ))}
+            ) : (
+              users.map((u) => (
+                <tr key={u._id}>
+                  <td className="py-2 px-4 border-b">{getDisplayName(u)}</td>
+                  <td className="py-2 px-4 border-b">{u.email ?? 'N/A'}</td>
+                  <td className="py-2 px-4 border-b">{u.role ?? 'N/A'}</td>
+                  <td className="py-2 px-4 border-b">{u.profile?.department ?? 'N/A'}</td>
+                  <td className="py-2 px-4 border-b">
+                    {typeof u.isActive === 'boolean'
+                      ? (u.isActive ? 'Active' : 'Inactive')
+                      : (u.status ?? 'N/A')}
+                  </td>
+                  <td className="py-2 px-4 border-b">
+                    <button
+                      className="text-blue-500 hover:underline mr-2"
+                      onClick={() => {
+                        setEditingUser(u);
+                        setShowEditModal(true);
+                      }}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      className="text-red-500 hover:underline"
+                      onClick={() => {
+                        // handleDeleteUser(u._id);
+                      }}
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
-        {/* Modals for create/edit/password can go here */}
+        {/* Pagination controls */}
+        <div className="mt-4 flex justify-between">
+          <button
+            className="px-3 py-1 border rounded"
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+          >
+            Previous
+          </button>
+          <span>
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            className="px-3 py-1 border rounded"
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+          >
+            Next
+          </button>
+        </div>
+        {/* Modals */}
+        {showCreateModal && (
+          <CreateUserModal
+            onClose={() => setShowCreateModal(false)}
+            onUserCreated={fetchUsers}
+          />
+        )}
+        {showEditModal && editingUser && (
+          <EditUserModal
+            user={editingUser}
+            onClose={() => setShowEditModal(false)}
+            onUserUpdated={fetchUsers}
+          />
+        )}
+        {showPasswordModal && editingUser && (
+          <ChangePasswordModal
+            user={editingUser}
+            onClose={() => setShowPasswordModal(false)}
+          />
+        )}
       </div>
     );
   }
 
   // Render for non-admin users
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
   return (
     <div className="max-w-4xl mx-auto p-6">
       <h2 className="text-2xl font-bold mb-4">My Account</h2>
-      {error && <div className="text-red-500 mb-2">{error}</div>}
       <div className="bg-white p-4 rounded shadow">
-        <p><strong>Name:</strong> {currentUser?.name ?? user.name ?? 'N/A'}</p>
-        <p><strong>Email:</strong> {currentUser?.email ?? user.email ?? 'N/A'}</p>
-        <p><strong>Role:</strong> {currentUser?.role ?? user.role ?? 'N/A'}</p>
-        <p><strong>Department:</strong> {currentUser?.profile?.department ?? user?.profile?.department ?? 'N/A'}</p>
-        <p><strong>Status:</strong> {currentUser?.status ?? user.status ?? 'N/A'}</p>
+        <p><strong>Name:</strong> {getDisplayName(currentUser ?? user)}</p>
+        <p><strong>Email:</strong> {(currentUser?.email ?? user.email) ?? 'N/A'}</p>
+        <p><strong>Role:</strong> {(currentUser?.role ?? user.role) ?? 'N/A'}</p>
+        <p><strong>Department:</strong> {(currentUser?.profile?.department ?? user?.profile?.department) ?? 'N/A'}</p>
+        <p><strong>Status:</strong> {typeof (currentUser?.isActive ?? user.isActive) === 'boolean'
+          ? ((currentUser?.isActive ?? user.isActive) ? 'Active' : 'Inactive')
+          : (currentUser?.status ?? user.status ?? 'N/A')}
+        </p>
       </div>
     </div>
   );
